@@ -54,33 +54,33 @@ gulp.task('compass', function (cb) {
 });
 
 
-gulp.task('css-minify', ['compass'], function () {
+gulp.task('css-minify', gulp.series('compass', function () {
     return gulp.src([DEST + '/css/*.css', '!' + DEST + '/css/*.min.css'])
         .pipe(rename({suffix: '.min'}))
         .pipe(minifyCSS())
         .pipe(gulp.dest(DEST + '/css'))
         .pipe(browserSync.stream());
-});
+}));
 
-gulp.task('browser-sync', ['layout'], function () {
+gulp.task('browser-sync', gulp.series('layout', function () {
     browserSync.init({
         server: {
             baseDir: './'
         },
         startPath: './public/index.html'
     });
-    gulp.watch('src/js/*.js', ['scripts']);
+    gulp.watch('src/js/*.js', gulp.series(['scripts']));
     // Watch .scss files
-    gulp.watch('src/scss/*.scss', ['compass', 'css-minify']);
-});
+    gulp.watch('src/scss/*.scss', gulp.series(['compass', 'css-minify']));
+}));
 
-gulp.task('watch', ['layout','scripts', 'css-minify'], function () {
+gulp.task('watch', gulp.series(['layout','scripts', 'css-minify'], function () {
     // Watch .html files
-    gulp.watch('production/*.html', ['layout', browserSync.reload]);
+    gulp.watch('production/*.html', gulp.series(['layout', browserSync.reload]));
     // Watch .js files
-    gulp.watch('src/js/*.js', ['scripts']);
+    gulp.watch('src/js/*.js', gulp.series(['scripts']));
     // Watch .scss files
-    gulp.watch('src/scss/*.scss', ['compass', 'css-minify']);
-});
+    gulp.watch('src/scss/*.scss', gulp.series(['compass', 'css-minify']));
+}));
 // Default Task
-gulp.task('default', ['layout', 'browser-sync', 'watch']);
+gulp.task('default', gulp.series(['layout', 'browser-sync', 'watch']));
